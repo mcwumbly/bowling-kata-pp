@@ -1,6 +1,9 @@
 package acceptance_test
 
 import (
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
 
@@ -14,6 +17,7 @@ import (
 
 var (
 	binPath string
+	url     string
 	session *gexec.Session
 )
 
@@ -28,6 +32,7 @@ var _ = BeforeSuite(func() {
 	var err error
 	srcPath := os.Getenv("GOPATH") + "/src/github.com/mcwumbly/bowl-kata-pp-01/main.go"
 	binPath, err = gexec.Build(srcPath, "-race")
+	url = "http://localhost:8080/"
 	Expect(err).NotTo(HaveOccurred())
 })
 
@@ -41,11 +46,25 @@ var _ = Describe("bowling kata++", func() {
 
 	AfterEach(func() {
 		session.Interrupt()
+		Eventually(session.Out).Should(gbytes.Say("shutting down..."))
 		Eventually(session, TIMEOUT).Should(gexec.Exit(0))
 		Eventually(session.Out).Should(gbytes.Say("exiting..."))
 	})
 
 	It("prints to stdout when it starts up", func() {
-		Eventually(session.Out).Should(gbytes.Say("let's start bowling!"))
+		Eventually(session.Out, TIMEOUT).Should(gbytes.Say("let's start bowling!"))
+	})
+
+	It("serves JSON over HTTP", func() {
+		Eventually(session.Out, TIMEOUT).Should(gbytes.Say("let's start bowling!"))
+
+		resp, err := http.Get(url)
+		Expect(err).NotTo(HaveOccurred())
+		respBytes, err := ioutil.ReadAll(resp.Body)
+		Expect(err).NotTo(HaveOccurred())
+		var body struct {
+		}
+		err = json.Unmarshal(respBytes, &body)
+		Expect(err).NotTo(HaveOccurred())
 	})
 })
