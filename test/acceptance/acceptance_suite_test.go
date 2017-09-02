@@ -1,7 +1,6 @@
 package acceptance_test
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -53,14 +52,16 @@ var _ = Describe("bowling kata++", func() {
 		Eventually(session.Out).Should(gbytes.Say("exiting..."))
 	})
 
-	It("serves JSON over HTTP", func() {
+	It("displays the total score and the completed frames", func() {
 		resp, err := http.Get(url)
 		Expect(err).NotTo(HaveOccurred())
 		respBytes, err := ioutil.ReadAll(resp.Body)
 		Expect(err).NotTo(HaveOccurred())
-		var body struct {
-		}
-		err = json.Unmarshal(respBytes, &body)
-		Expect(err).NotTo(HaveOccurred())
+		Expect(string(respBytes)).To(MatchJSON(`{
+			"game": {
+				"frames": [],
+				"total": 0
+			}
+		}`))
 	})
 })
