@@ -1,6 +1,7 @@
 package acceptance_test
 
 import (
+	"bytes"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -53,15 +54,41 @@ var _ = Describe("bowling kata++", func() {
 	})
 
 	It("displays the total score and the completed frames", func() {
-		resp, err := http.Get(url)
-		Expect(err).NotTo(HaveOccurred())
-		respBytes, err := ioutil.ReadAll(resp.Body)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(string(respBytes)).To(MatchJSON(`{
+		By("getting the initial state of the game", func() {
+			resp, err := http.Get(url)
+			Expect(err).NotTo(HaveOccurred())
+			defer resp.Body.Close()
+			respBytes, err := ioutil.ReadAll(resp.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(respBytes)).To(MatchJSON(`{
 			"game": {
 				"frames": [],
 				"total": 0
 			}
 		}`))
+		})
+
+		By("bowling the first ball", func() {
+			req := bytes.NewBufferString(`{ "bowl": { "pins": 9 } }`)
+			resp, err := http.Post(url, "application/json", req)
+			Expect(err).NotTo(HaveOccurred())
+			defer resp.Body.Close()
+			respBytes, err := ioutil.ReadAll(resp.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(respBytes)).To(MatchJSON(`{
+			"game": {
+				"frames": [
+				  {
+						"frame": 1,
+						"balls": [
+						  { "ball": 1, "pins": 9 }
+						],
+						"total": 9
+					}
+				],
+				"total": 9
+			}
+		}`))
+		})
 	})
 })
