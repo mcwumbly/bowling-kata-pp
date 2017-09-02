@@ -69,7 +69,7 @@ var _ = Describe("bowling kata++", func() {
 		})
 
 		By("bowling the first ball", func() {
-			req := bytes.NewBufferString(`{ "bowl": { "pins": 9 } }`)
+			req := bytes.NewBufferString(`{ "bowl": { "pins": 3 } }`)
 			resp, err := http.Post(url, "application/json", req)
 			Expect(err).NotTo(HaveOccurred())
 			defer resp.Body.Close()
@@ -81,14 +81,39 @@ var _ = Describe("bowling kata++", func() {
 				  {
 						"frame": 1,
 						"balls": [
-						  { "ball": 1, "pins": 9 }
+						  { "ball": 1, "pins": 3 }
 						],
-						"total": 9
+						"total": 3
 					}
 				],
-				"total": 9
+				"total": 3
 			}
 		}`))
 		})
+
+		By("bowling the second ball", func() {
+			req := bytes.NewBufferString(`{ "bowl": { "pins": 5 } }`)
+			resp, err := http.Post(url, "application/json", req)
+			Expect(err).NotTo(HaveOccurred())
+			defer resp.Body.Close()
+			respBytes, err := ioutil.ReadAll(resp.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(respBytes)).To(MatchJSON(`{
+			"game": {
+				"frames": [
+				  {
+						"frame": 1,
+						"balls": [
+						  { "ball": 1, "pins": 3 },
+						  { "ball": 2, "pins": 5 }
+						],
+						"total": 8
+					}
+				],
+				"total": 8
+			}
+		}`))
+		})
+
 	})
 })

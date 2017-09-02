@@ -60,16 +60,22 @@ func response(bowls []int) []byte {
 		gameView.Frames = []view.Frame{}
 	}
 	if len(bowls) > 0 {
+		total := 0
+		balls := []view.Ball{}
+		for i, bowl := range bowls {
+			balls = append(balls, view.Ball{
+				Ball: i + 1,
+				Pins: bowl,
+			})
+			total += bowl
+		}
 		gameView = view.Game{
 			Frames: []view.Frame{{
 				Frame: 1,
-				Balls: []view.Ball{{
-					Ball: 1,
-					Pins: bowls[0],
-				}},
-				Total: bowls[0],
+				Balls: balls,
+				Total: total,
 			}},
-			Total: bowls[0],
+			Total: total,
 		}
 	}
 	respBytes, err := json.Marshal(view.Response{Game: gameView})
