@@ -42,6 +42,8 @@ var _ = Describe("bowling kata++", func() {
 		cmd := exec.Command(binPath)
 		session, err = gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
+
+		Eventually(session.Out, TIMEOUT).Should(gbytes.Say("let's start bowling!"))
 	})
 
 	AfterEach(func() {
@@ -51,13 +53,7 @@ var _ = Describe("bowling kata++", func() {
 		Eventually(session.Out).Should(gbytes.Say("exiting..."))
 	})
 
-	It("prints to stdout when it starts up", func() {
-		Eventually(session.Out, TIMEOUT).Should(gbytes.Say("let's start bowling!"))
-	})
-
 	It("serves JSON over HTTP", func() {
-		Eventually(session.Out, TIMEOUT).Should(gbytes.Say("let's start bowling!"))
-
 		resp, err := http.Get(url)
 		Expect(err).NotTo(HaveOccurred())
 		respBytes, err := ioutil.ReadAll(resp.Body)
