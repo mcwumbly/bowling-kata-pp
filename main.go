@@ -20,10 +20,17 @@ func main() {
 	app := game.Game{}
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
-			var err error
-			bowls, err = app.AddBowl(bowls, bowlFromRequest(r))
+			bowl, err := bowlFromRequest(r)
 			if err != nil {
-				panic(err)
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte(fmt.Sprintf(`{"error": "%s"}`, err)))
+				return
+			}
+			bowls, err = app.AddBowl(bowls, bowl)
+			if err != nil {
+				w.WriteHeader(http.StatusConflict)
+				w.Write([]byte(fmt.Sprintf(`{"error": "%s"}`, err)))
+				return
 			}
 		}
 		w.Write(response(bowls, app))
@@ -43,18 +50,18 @@ func main() {
 	fmt.Println("exiting...")
 }
 
-func bowlFromRequest(r *http.Request) int {
+func bowlFromRequest(r *http.Request) (int, error) {
 	var bowl request.BowlRequest
 	defer r.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		panic(err)
+		return -1, err
 	}
 	err = json.Unmarshal(bodyBytes, &bowl)
 	if err != nil {
-		panic(err)
+		return -1, err
 	}
-	return bowl.Bowl.Pins
+	return bowl.Bowl.Pins, nil
 }
 
 func response(bowls []int, app game.Game) []byte {

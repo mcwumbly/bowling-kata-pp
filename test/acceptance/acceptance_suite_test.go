@@ -114,6 +114,54 @@ var _ = Describe("bowling kata++", func() {
 			}
 		}`))
 		})
+	})
 
+	Context("when you try to bowl more than 10 pins", func() {
+		It("returns an error", func() {
+			req := bytes.NewBufferString(`{ "bowl": { "pins": 11 } }`)
+			resp, err := http.Post(url, "application/json", req)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(resp.StatusCode).To(Equal(http.StatusConflict))
+			defer resp.Body.Close()
+			respBytes, err := ioutil.ReadAll(resp.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(respBytes)).To(MatchJSON(`{
+			"error": "number of pins cannot be greater than 10"
+		}`))
+		})
+	})
+
+	Context("when you try to bowl more than the number of remaining pins", func() {
+		It("returns an error", func() {
+			req := bytes.NewBufferString(`{ "bowl": { "pins": 8 } }`)
+			_, err := http.Post(url, "application/json", req)
+			Expect(err).NotTo(HaveOccurred())
+
+			req = bytes.NewBufferString(`{ "bowl": { "pins": 3 } }`)
+			resp, err := http.Post(url, "application/json", req)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(resp.StatusCode).To(Equal(http.StatusConflict))
+			defer resp.Body.Close()
+			respBytes, err := ioutil.ReadAll(resp.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(respBytes)).To(MatchJSON(`{
+				"error": "number of pins cannot be greater than remaining pins: 2"
+		}`))
+		})
+	})
+
+	Context("when you the request is invalid json", func() {
+		It("returns an error", func() {
+			req := bytes.NewBufferString(`{ "bowl": { "pins": 8 } `)
+			resp, err := http.Post(url, "application/json", req)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(resp.StatusCode).To(Equal(http.StatusBadRequest))
+			defer resp.Body.Close()
+			respBytes, err := ioutil.ReadAll(resp.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(respBytes)).To(MatchJSON(`{
+				"error": "unexpected end of JSON input"
+		}`))
+		})
 	})
 })
