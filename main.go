@@ -65,7 +65,7 @@ func bowlFromRequest(r *http.Request) (int, error) {
 
 func response(app *game.Game) []byte {
 	var gameView view.Game
-	gameView.Frames = app.Frames()
+	gameView.Frames = view.Frames(app.Frames())
 	total := 0
 	for _, f := range app.Frames() {
 		total += f.Total

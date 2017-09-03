@@ -3,8 +3,6 @@ package game
 import (
 	"errors"
 	"fmt"
-
-	"github.com/mcwumbly/bowl-kata-pp-01/view"
 )
 
 type Game struct {
@@ -43,33 +41,7 @@ func (g *Game) AddBowl(pins int) error {
 	return nil
 }
 
-func (g *Game) Frames() []view.Frame {
-	frames := []view.Frame{}
-	for _, f := range g.frames() {
-		if len(f.Balls) == 0 {
-			break
-		}
-		frames = append(frames, viewFrame(f))
-	}
-	return frames
-}
-
-func viewFrame(f Frame) view.Frame {
-	balls := []view.Ball{}
-	for i, b := range f.Balls {
-		balls = append(balls, view.Ball{
-			Ball: i + 1,
-			Pins: b,
-		})
-	}
-	return view.Frame{
-		Frame: f.Number,
-		Total: f.Total,
-		Balls: balls,
-	}
-}
-
-func (g *Game) frames() []Frame {
+func (g *Game) Frames() []Frame {
 	frames := []Frame{Frame{Number: 1, Total: 0, Balls: []int{}}}
 	f := &frames[len(frames)-1]
 	for _, bowl := range g.Bowls() {
@@ -88,7 +60,7 @@ func (f Frame) isComplete() bool {
 }
 
 func (g *Game) isComplete() bool {
-	frames := g.frames()
+	frames := g.Frames()
 	return len(frames) == 10 && frames[len(frames)-1].isComplete()
 }
 
@@ -96,7 +68,7 @@ func (g *Game) currentFrame() Frame {
 	if g.isComplete() {
 		return Frame{Number: 0, Total: 10}
 	}
-	frames := g.frames()
+	frames := g.Frames()
 	f := frames[len(frames)-1]
 	if f.isComplete() {
 		f = Frame{Number: f.Number + 1, Balls: []int{}}
