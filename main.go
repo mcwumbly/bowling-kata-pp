@@ -32,7 +32,7 @@ func main() {
 				return
 			}
 		}
-		w.Write(response(app.Bowls(), app))
+		w.Write(response(app))
 	})
 	s := http.Server{Addr: ":8080"}
 	go func() {
@@ -63,16 +63,16 @@ func bowlFromRequest(r *http.Request) (int, error) {
 	return bowl.Bowl.Pins, nil
 }
 
-func response(bowls []int, app *game.Game) []byte {
+func response(app *game.Game) []byte {
 	var gameView view.Game
-	gameView.Frames = app.Frames(bowls)
+	gameView.Frames = app.Frames()
 	total := 0
-	for _, bowl := range bowls {
+	for _, bowl := range app.Bowls() {
 		total += bowl
 	}
 	gameView.Total = total
-	gameView.CurrentFrame = app.CurrentFrame(bowls)
-	gameView.RemainingPins = app.RemainingPins(bowls)
+	gameView.CurrentFrame = app.CurrentFrame()
+	gameView.RemainingPins = app.RemainingPins()
 	respBytes, err := json.Marshal(view.Response{Game: gameView})
 	if err != nil {
 		panic(err)

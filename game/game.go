@@ -21,10 +21,12 @@ type game struct {
 	bowls []int
 }
 
-func New() *Game {
-	return &Game{
-		bowls: []int{},
+func New(bowls ...int) *Game {
+	g := &Game{}
+	for _, bowl := range bowls {
+		g.AddBowl(bowl)
 	}
+	return g
 }
 
 func (g *Game) Bowls() []int {
@@ -38,18 +40,17 @@ func (g *Game) AddBowl(pins int) error {
 	if pins > 10 {
 		return errors.New("number of pins cannot be greater than 10")
 	}
-	remaining := g.RemainingPins(g.bowls)
-	if pins > remaining {
-		return fmt.Errorf("number of pins cannot be greater than remaining pins: %d", remaining)
+	if pins > g.RemainingPins() {
+		return fmt.Errorf("number of pins cannot be greater than remaining pins: %d", g.RemainingPins())
 	}
 	g.bowls = append(g.bowls, pins)
 	return nil
 }
 
-func (*Game) Frames(bowls []int) []view.Frame {
+func (g *Game) Frames() []view.Frame {
 	frames := []view.Frame{}
-	g := game{bowls: bowls}
-	for _, f := range g.frames() {
+	m := game{bowls: g.Bowls()}
+	for _, f := range m.frames() {
 		if len(f.balls) == 0 {
 			break
 		}
@@ -73,10 +74,10 @@ func viewFrame(f frame) view.Frame {
 	}
 }
 
-func (g game) frames() []frame {
+func (m game) frames() []frame {
 	frames := []frame{frame{number: 1, total: 0, balls: []int{}}}
 	f := &frames[len(frames)-1]
-	for _, bowl := range g.bowls {
+	for _, bowl := range m.bowls {
 		if f.isComplete() {
 			frames = append(frames, frame{number: len(frames) + 1, total: 0, balls: []int{}})
 			f = &frames[len(frames)-1]
@@ -91,16 +92,16 @@ func (f frame) isComplete() bool {
 	return len(f.balls) == 2 || f.total == 10
 }
 
-func (g game) isComplete() bool {
-	frames := g.frames()
+func (m game) isComplete() bool {
+	frames := m.frames()
 	return len(frames) == 10 && frames[len(frames)-1].isComplete()
 }
 
-func (g game) currentFrame() frame {
-	if g.isComplete() {
+func (m game) currentFrame() frame {
+	if m.isComplete() {
 		return frame{number: 0, total: 10}
 	}
-	frames := g.frames()
+	frames := m.frames()
 	f := frames[len(frames)-1]
 	if f.isComplete() {
 		f = frame{number: f.number + 1, balls: []int{}}
@@ -108,12 +109,12 @@ func (g game) currentFrame() frame {
 	return f
 }
 
-func (*Game) CurrentFrame(bowls []int) int {
-	g := game{bowls: bowls}
-	return g.currentFrame().number
+func (g *Game) CurrentFrame() int {
+	m := game{bowls: g.Bowls()}
+	return m.currentFrame().number
 }
 
-func (*Game) RemainingPins(bowls []int) int {
-	g := game{bowls: bowls}
-	return 10 - g.currentFrame().total
+func (g *Game) RemainingPins() int {
+	m := game{bowls: g.Bowls()}
+	return 10 - m.currentFrame().total
 }
