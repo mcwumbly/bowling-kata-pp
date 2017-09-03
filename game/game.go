@@ -25,51 +25,40 @@ func (g Game) AddBowl(bowls []int, pins int) ([]int, error) {
 
 func (g Game) Frames(bowls []int) []view.Frame {
 	frames := []view.Frame{}
-	if len(bowls) > 0 {
-		total := 0
-		balls := []view.Ball{}
-		for i, bowl := range bowls {
-			balls = append(balls, view.Ball{
-				Ball: len(balls) + 1,
-				Pins: bowl,
-			})
-			total += bowl
-			currentFrame := g.CurrentFrame(bowls[:i])
-			if len(balls) == 1 {
-				frames = append(frames, view.Frame{
-					Frame: currentFrame,
-					Balls: balls,
-					Total: total,
-				})
-			} else {
-				frames[currentFrame-1].Balls = balls
-				frames[currentFrame-1].Total = total
-			}
-			if len(balls) != 1 || total == 10 {
-				total = 0
-				balls = []view.Ball{}
-			}
+	if len(bowls) == 0 {
+		return frames
+	}
+	frames = append(frames, view.Frame{Balls: []view.Ball{}})
+	frame := &frames[len(frames)-1]
+	for _, bowl := range bowls {
+		if len(frame.Balls) == 2 || frame.Total == 10 {
+			frames = append(frames, view.Frame{Balls: []view.Ball{}})
+			frame = &frames[len(frames)-1]
 		}
+		frame.Frame = len(frames)
+		frame.Total += bowl
+		frame.Balls = append(frame.Balls, view.Ball{
+			Ball: len(frame.Balls) + 1,
+			Pins: bowl,
+		})
 	}
 	return frames
 }
 
 func (g Game) CurrentFrame(bowls []int) int {
-	currentFrame := 1
-	ball, remaining := 1, 10
-	for _, bowl := range bowls {
-		remaining -= bowl
-		if remaining == 0 || ball == 2 {
-			ball, remaining = 1, 10
-			currentFrame++
-		} else {
-			ball = 2
+	frames := g.Frames(bowls)
+	if len(frames) == 0 {
+		return 1
+	}
+	lastFrame := frames[len(frames)-1]
+	if len(lastFrame.Balls) == 2 || lastFrame.Total == 10 {
+		currentFrame := len(frames) + 1
+		if currentFrame > 10 {
+			return 0
 		}
+		return currentFrame
 	}
-	if currentFrame > 10 {
-		return 0
-	}
-	return currentFrame
+	return len(frames)
 }
 
 func (g Game) RemainingPins(bowls []int) int {
