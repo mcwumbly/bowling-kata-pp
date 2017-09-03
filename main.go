@@ -67,8 +67,8 @@ func response(app *game.Game) []byte {
 	var gameView view.Game
 	gameView.Frames = app.Frames()
 	total := 0
-	for _, bowl := range app.Bowls() {
-		total += bowl
+	for _, f := range app.Frames() {
+		total += f.Total
 	}
 	gameView.Total = total
 	gameView.CurrentFrame = app.CurrentFrame()
