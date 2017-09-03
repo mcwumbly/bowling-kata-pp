@@ -34,27 +34,30 @@ func (g Game) AddBowl(bowls []int, pins int) ([]int, error) {
 }
 
 func (Game) Frames(bowls []int) []view.Frame {
-	vs := []view.Frame{}
+	frames := []view.Frame{}
 	g := game{bowls: bowls}
-	frames := g.frames()
-	for i, f := range frames {
+	for _, f := range g.frames() {
 		if len(f.balls) == 0 {
 			break
 		}
-		balls := []view.Ball{}
-		for i, b := range f.balls {
-			balls = append(balls, view.Ball{
-				Ball: i + 1,
-				Pins: b,
-			})
-		}
-		vs = append(vs, view.Frame{
-			Frame: i + 1,
-			Total: f.total,
-			Balls: balls,
+		frames = append(frames, viewFrame(f))
+	}
+	return frames
+}
+
+func viewFrame(f frame) view.Frame {
+	balls := []view.Ball{}
+	for i, b := range f.balls {
+		balls = append(balls, view.Ball{
+			Ball: i + 1,
+			Pins: b,
 		})
 	}
-	return vs
+	return view.Frame{
+		Frame: f.number,
+		Total: f.total,
+		Balls: balls,
+	}
 }
 
 func (g game) frames() []frame {
