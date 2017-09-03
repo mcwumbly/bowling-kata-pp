@@ -31,7 +31,7 @@ func (g Game) Frames(bowls []int) []view.Frame {
 	frames = append(frames, view.Frame{Balls: []view.Ball{}})
 	frame := &frames[len(frames)-1]
 	for _, bowl := range bowls {
-		if len(frame.Balls) == 2 || frame.Total == 10 {
+		if g.frameComplete(*frame) {
 			frames = append(frames, view.Frame{Balls: []view.Ball{}})
 			frame = &frames[len(frames)-1]
 		}
@@ -50,29 +50,29 @@ func (g Game) CurrentFrame(bowls []int) int {
 	if len(frames) == 0 {
 		return 1
 	}
-	lastFrame := frames[len(frames)-1]
-	if len(lastFrame.Balls) == 2 || lastFrame.Total == 10 {
-		currentFrame := len(frames) + 1
-		if currentFrame > 10 {
+	if g.frameComplete(frames[len(frames)-1]) {
+		if len(frames) == 10 {
 			return 0
 		}
-		return currentFrame
+		return len(frames) + 1
 	}
 	return len(frames)
 }
 
 func (g Game) RemainingPins(bowls []int) int {
-	ball, remaining := 1, 10
-	for _, bowl := range bowls {
-		remaining -= bowl
-		if remaining == 0 || ball == 2 {
-			ball, remaining = 1, 10
-		} else {
-			ball = 2
+	frames := g.Frames(bowls)
+	if len(frames) == 0 {
+		return 10
+	}
+	if g.frameComplete(frames[len(frames)-1]) {
+		if len(frames) == 10 {
+			return 0
 		}
+		return 10
 	}
-	if g.CurrentFrame(bowls) == 0 {
-		return 0
-	}
-	return remaining
+	return 10 - frames[len(frames)-1].Total
+}
+
+func (g Game) frameComplete(frame view.Frame) bool {
+	return len(frame.Balls) == 2 || frame.Total == 10
 }
