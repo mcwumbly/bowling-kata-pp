@@ -16,8 +16,7 @@ import (
 )
 
 func main() {
-	var bowls []int
-	app := game.Game{}
+	app := game.New()
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
 			bowl, err := bowlFromRequest(r)
@@ -26,14 +25,14 @@ func main() {
 				w.Write([]byte(fmt.Sprintf(`{"error": "%s"}`, err)))
 				return
 			}
-			bowls, err = app.AddBowl(bowls, bowl)
+			err = app.AddBowl(bowl)
 			if err != nil {
 				w.WriteHeader(http.StatusConflict)
 				w.Write([]byte(fmt.Sprintf(`{"error": "%s"}`, err)))
 				return
 			}
 		}
-		w.Write(response(bowls, app))
+		w.Write(response(app.Bowls(), app))
 	})
 	s := http.Server{Addr: ":8080"}
 	go func() {
@@ -64,7 +63,7 @@ func bowlFromRequest(r *http.Request) (int, error) {
 	return bowl.Bowl.Pins, nil
 }
 
-func response(bowls []int, app game.Game) []byte {
+func response(bowls []int, app *game.Game) []byte {
 	var gameView view.Game
 	gameView.Frames = app.Frames(bowls)
 	total := 0

@@ -7,7 +7,9 @@ import (
 	"github.com/mcwumbly/bowl-kata-pp-01/view"
 )
 
-type Game struct{}
+type Game struct {
+	bowls []int
+}
 
 type frame struct {
 	number int
@@ -19,21 +21,32 @@ type game struct {
 	bowls []int
 }
 
-func (g Game) AddBowl(bowls []int, pins int) ([]int, error) {
-	if pins < 0 {
-		return bowls, errors.New("number of pins cannot be less than 0")
+func New() *Game {
+	return &Game{
+		bowls: []int{},
 	}
-	if pins > 10 {
-		return bowls, errors.New("number of pins cannot be greater than 10")
-	}
-	remaining := g.RemainingPins(bowls)
-	if pins > remaining {
-		return bowls, fmt.Errorf("number of pins cannot be greater than remaining pins: %d", remaining)
-	}
-	return append(bowls, pins), nil
 }
 
-func (Game) Frames(bowls []int) []view.Frame {
+func (g *Game) Bowls() []int {
+	return g.bowls
+}
+
+func (g *Game) AddBowl(pins int) error {
+	if pins < 0 {
+		return errors.New("number of pins cannot be less than 0")
+	}
+	if pins > 10 {
+		return errors.New("number of pins cannot be greater than 10")
+	}
+	remaining := g.RemainingPins(g.bowls)
+	if pins > remaining {
+		return fmt.Errorf("number of pins cannot be greater than remaining pins: %d", remaining)
+	}
+	g.bowls = append(g.bowls, pins)
+	return nil
+}
+
+func (*Game) Frames(bowls []int) []view.Frame {
 	frames := []view.Frame{}
 	g := game{bowls: bowls}
 	for _, f := range g.frames() {
@@ -95,12 +108,12 @@ func (g game) currentFrame() frame {
 	return f
 }
 
-func (Game) CurrentFrame(bowls []int) int {
+func (*Game) CurrentFrame(bowls []int) int {
 	g := game{bowls: bowls}
 	return g.currentFrame().number
 }
 
-func (Game) RemainingPins(bowls []int) int {
+func (*Game) RemainingPins(bowls []int) int {
 	g := game{bowls: bowls}
 	return 10 - g.currentFrame().total
 }

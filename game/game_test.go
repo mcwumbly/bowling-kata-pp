@@ -8,50 +8,51 @@ import (
 
 var _ = Describe("Game", func() {
 	var (
-		app game.Game
+		app *game.Game
 	)
 	BeforeEach(func() {
-		app = game.Game{}
+		app = game.New()
 	})
 
 	Describe("AddBowl", func() {
 		It("Adds a bowl and returns the list of bowls", func() {
-			bowls, err := app.AddBowl([]int{}, 3)
+			err := app.AddBowl(3)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(bowls).To(ConsistOf(3))
+			Expect(app.Bowls()).To(ConsistOf(3))
 
-			bowls, err = app.AddBowl([]int{5}, 3)
+			err = app.AddBowl(5)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(bowls).To(ConsistOf(5, 3))
+			Expect(app.Bowls()).To(ConsistOf(3, 5))
 
-			bowls, err = app.AddBowl([]int{3, 4, 10, 7}, 3)
+			err = app.AddBowl(10)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(bowls).To(ConsistOf(3, 4, 10, 7, 3))
+			Expect(app.Bowls()).To(ConsistOf(3, 5, 10))
+
+			err = app.AddBowl(7)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(app.Bowls()).To(ConsistOf(3, 5, 10, 7))
 		})
 
 		Context("When the number of pins is less than 0", func() {
 			It("returns an error", func() {
-				_, err := app.AddBowl([]int{}, -1)
+				err := app.AddBowl(-1)
 				Expect(err).To(MatchError("number of pins cannot be less than 0"))
 			})
 		})
 
 		Context("When the number of pins is greater than 10", func() {
 			It("returns an error", func() {
-				_, err := app.AddBowl([]int{}, 11)
+				err := app.AddBowl(11)
 				Expect(err).To(MatchError("number of pins cannot be greater than 10"))
 			})
 		})
 
 		Context("When the number of pins is greater than the number of pins left in the frame", func() {
 			It("returns an error", func() {
-				_, err := app.AddBowl([]int{3}, 8)
+				err := app.AddBowl(3)
+				Expect(err).NotTo(HaveOccurred())
+				err = app.AddBowl(8)
 				Expect(err).To(MatchError("number of pins cannot be greater than remaining pins: 7"))
-			})
-
-			It("returns an error", func() {
-				_, err := app.AddBowl([]int{3, 4, 10, 7}, 4)
-				Expect(err).To(MatchError("number of pins cannot be greater than remaining pins: 3"))
 			})
 		})
 	})
