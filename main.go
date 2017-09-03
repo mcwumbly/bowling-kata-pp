@@ -10,20 +10,23 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/mcwumbly/bowl-kata-pp-01/game"
 	"github.com/mcwumbly/bowl-kata-pp-01/request"
 	"github.com/mcwumbly/bowl-kata-pp-01/view"
 )
 
-var (
-	bowls []int
-)
-
 func main() {
+	var bowls []int
+	app := game.Game{}
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
-			bowls = append(bowls, bowlFromRequest(r))
+			var err error
+			bowls, err = app.AddBowl(bowls, bowlFromRequest(r))
+			if err != nil {
+				panic(err)
+			}
 		}
-		w.Write(response(bowls))
+		w.Write(response(bowls, app))
 	})
 	s := http.Server{Addr: ":8080"}
 	go func() {
@@ -54,30 +57,14 @@ func bowlFromRequest(r *http.Request) int {
 	return bowl.Bowl.Pins
 }
 
-func response(bowls []int) []byte {
+func response(bowls []int, app game.Game) []byte {
 	var gameView view.Game
-	if gameView.Frames == nil {
-		gameView.Frames = []view.Frame{}
+	gameView.Frames = app.Frames(bowls)
+	total := 0
+	for _, bowl := range bowls {
+		total += bowl
 	}
-	if len(bowls) > 0 {
-		total := 0
-		balls := []view.Ball{}
-		for i, bowl := range bowls {
-			balls = append(balls, view.Ball{
-				Ball: i + 1,
-				Pins: bowl,
-			})
-			total += bowl
-		}
-		gameView = view.Game{
-			Frames: []view.Frame{{
-				Frame: 1,
-				Balls: balls,
-				Total: total,
-			}},
-			Total: total,
-		}
-	}
+	gameView.Total = total
 	respBytes, err := json.Marshal(view.Response{Game: gameView})
 	if err != nil {
 		panic(err)
