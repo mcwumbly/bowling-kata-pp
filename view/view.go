@@ -5,8 +5,10 @@ type Response struct {
 }
 
 type Game struct {
-	Frames []Frame `json:"frames"`
-	Total  int     `json:"total"`
+	CurrentFrame  int     `json:"currentFrame,omitempty"`
+	RemainingPins int     `json:"remainingPins,omitempty"`
+	Frames        []Frame `json:"frames"`
+	Total         int     `json:"total"`
 }
 
 type Frame struct {

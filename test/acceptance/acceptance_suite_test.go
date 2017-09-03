@@ -62,6 +62,8 @@ var _ = Describe("bowling kata++", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(respBytes)).To(MatchJSON(`{
 			"game": {
+				"currentFrame": 1,
+				"remainingPins": 10,
 				"frames": [],
 				"total": 0
 			}
@@ -77,6 +79,8 @@ var _ = Describe("bowling kata++", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(respBytes)).To(MatchJSON(`{
 			"game": {
+				"currentFrame": 1,
+				"remainingPins": 7,
 				"frames": [
 				  {
 						"frame": 1,
@@ -100,6 +104,8 @@ var _ = Describe("bowling kata++", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(respBytes)).To(MatchJSON(`{
 			"game": {
+				"currentFrame": 2,
+				"remainingPins": 10,
 				"frames": [
 				  {
 						"frame": 1,
@@ -111,6 +117,87 @@ var _ = Describe("bowling kata++", func() {
 					}
 				],
 				"total": 8
+			}
+		}`))
+		})
+
+		By("bowling the remaining balls", func() {
+			req := bytes.NewBufferString(`{ "bowl": { "pins": 4 } }`)
+			_, err := http.Post(url, "application/json", req)
+			Expect(err).NotTo(HaveOccurred())
+
+			req = bytes.NewBufferString(`{ "bowl": { "pins": 6 } }`)
+			_, err = http.Post(url, "application/json", req)
+			Expect(err).NotTo(HaveOccurred())
+
+			req = bytes.NewBufferString(`{ "bowl": { "pins": 1 } }`)
+			_, err = http.Post(url, "application/json", req)
+			Expect(err).NotTo(HaveOccurred())
+
+			req = bytes.NewBufferString(`{ "bowl": { "pins": 2 } }`)
+			_, err = http.Post(url, "application/json", req)
+			Expect(err).NotTo(HaveOccurred())
+
+			req = bytes.NewBufferString(`{ "bowl": { "pins": 5 } }`)
+			_, err = http.Post(url, "application/json", req)
+			Expect(err).NotTo(HaveOccurred())
+
+			req = bytes.NewBufferString(`{ "bowl": { "pins": 5 } }`)
+			_, err = http.Post(url, "application/json", req)
+			Expect(err).NotTo(HaveOccurred())
+
+			req = bytes.NewBufferString(`{ "bowl": { "pins": 10 } }`)
+			_, err = http.Post(url, "application/json", req)
+			Expect(err).NotTo(HaveOccurred())
+
+			req = bytes.NewBufferString(`{ "bowl": { "pins": 10 } }`)
+			_, err = http.Post(url, "application/json", req)
+			Expect(err).NotTo(HaveOccurred())
+
+			req = bytes.NewBufferString(`{ "bowl": { "pins": 10 } }`)
+			_, err = http.Post(url, "application/json", req)
+			Expect(err).NotTo(HaveOccurred())
+
+			req = bytes.NewBufferString(`{ "bowl": { "pins": 10 } }`)
+			_, err = http.Post(url, "application/json", req)
+			Expect(err).NotTo(HaveOccurred())
+
+			req = bytes.NewBufferString(`{ "bowl": { "pins": 10 } }`)
+			_, err = http.Post(url, "application/json", req)
+			Expect(err).NotTo(HaveOccurred())
+
+			req = bytes.NewBufferString(`{ "bowl": { "pins": 10 } }`)
+			resp, err := http.Post(url, "application/json", req)
+			Expect(err).NotTo(HaveOccurred())
+
+			defer resp.Body.Close()
+			respBytes, err := ioutil.ReadAll(resp.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(respBytes)).To(MatchJSON(`{
+			"game": {
+				"frames": [
+				  { "frame": 1, "total": 8,
+						"balls": [ { "ball": 1, "pins": 3 }, { "ball": 2, "pins": 5 } ] },
+				  { "frame": 2, "total": 10,
+						"balls": [ { "ball": 1, "pins": 4 }, { "ball": 2, "pins": 6 } ] },
+				  { "frame": 3, "total": 3,
+						"balls": [ { "ball": 1, "pins": 1 }, { "ball": 2, "pins": 2 } ] },
+				  { "frame": 4, "total": 10,
+						"balls": [ { "ball": 1, "pins": 5 }, { "ball": 2, "pins": 5 } ] },
+				  { "frame": 5, "total": 10,
+						"balls": [ { "ball": 1, "pins": 10 } ] },
+				  { "frame": 6, "total": 10,
+						"balls": [ { "ball": 1, "pins": 10 } ] },
+				  { "frame": 7, "total": 10,
+						"balls": [ { "ball": 1, "pins": 10 } ] },
+				  { "frame": 8, "total": 10,
+						"balls": [ { "ball": 1, "pins": 10 } ] },
+				  { "frame": 9, "total": 10,
+						"balls": [ { "ball": 1, "pins": 10 } ] },
+				  { "frame": 10, "total": 10,
+						"balls": [ { "ball": 1, "pins": 10 } ] }
+				],
+				"total": 91
 			}
 		}`))
 		})

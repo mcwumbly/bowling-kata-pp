@@ -72,6 +72,8 @@ func response(bowls []int, app game.Game) []byte {
 		total += bowl
 	}
 	gameView.Total = total
+	gameView.CurrentFrame = app.CurrentFrame(bowls)
+	gameView.RemainingPins = app.RemainingPins(bowls)
 	respBytes, err := json.Marshal(view.Response{Game: gameView})
 	if err != nil {
 		panic(err)
