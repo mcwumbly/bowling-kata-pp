@@ -9,6 +9,16 @@ import (
 
 type Game struct{}
 
+type frame struct {
+	number int
+	total  int
+	balls  []int
+}
+
+type game struct {
+	bowls []int
+}
+
 func (g Game) AddBowl(bowls []int, pins int) ([]int, error) {
 	if pins < 0 {
 		return bowls, errors.New("number of pins cannot be less than 0")
@@ -23,56 +33,71 @@ func (g Game) AddBowl(bowls []int, pins int) ([]int, error) {
 	return append(bowls, pins), nil
 }
 
-func (g Game) Frames(bowls []int) []view.Frame {
-	frames := []view.Frame{}
-	if len(bowls) == 0 {
-		return frames
-	}
-	frames = append(frames, view.Frame{Balls: []view.Ball{}})
-	frame := &frames[len(frames)-1]
-	for _, bowl := range bowls {
-		if g.frameComplete(*frame) {
-			frames = append(frames, view.Frame{Balls: []view.Ball{}})
-			frame = &frames[len(frames)-1]
+func (Game) Frames(bowls []int) []view.Frame {
+	vs := []view.Frame{}
+	g := game{bowls: bowls}
+	frames := g.frames()
+	for i, f := range frames {
+		if len(f.balls) == 0 {
+			break
 		}
-		frame.Frame = len(frames)
-		frame.Total += bowl
-		frame.Balls = append(frame.Balls, view.Ball{
-			Ball: len(frame.Balls) + 1,
-			Pins: bowl,
+		balls := []view.Ball{}
+		for i, b := range f.balls {
+			balls = append(balls, view.Ball{
+				Ball: i + 1,
+				Pins: b,
+			})
+		}
+		vs = append(vs, view.Frame{
+			Frame: i + 1,
+			Total: f.total,
+			Balls: balls,
 		})
+	}
+	return vs
+}
+
+func (g game) frames() []frame {
+	frames := []frame{frame{number: 1, total: 0, balls: []int{}}}
+	f := &frames[len(frames)-1]
+	for _, bowl := range g.bowls {
+		if f.isComplete() {
+			frames = append(frames, frame{number: len(frames) + 1, total: 0, balls: []int{}})
+			f = &frames[len(frames)-1]
+		}
+		f.total += bowl
+		f.balls = append(f.balls, bowl)
 	}
 	return frames
 }
 
-func (g Game) CurrentFrame(bowls []int) int {
-	frames := g.Frames(bowls)
-	if len(frames) == 0 {
-		return 1
-	}
-	if g.frameComplete(frames[len(frames)-1]) {
-		if len(frames) == 10 {
-			return 0
-		}
-		return len(frames) + 1
-	}
-	return len(frames)
+func (f frame) isComplete() bool {
+	return len(f.balls) == 2 || f.total == 10
 }
 
-func (g Game) RemainingPins(bowls []int) int {
-	frames := g.Frames(bowls)
-	if len(frames) == 0 {
-		return 10
-	}
-	if g.frameComplete(frames[len(frames)-1]) {
-		if len(frames) == 10 {
-			return 0
-		}
-		return 10
-	}
-	return 10 - frames[len(frames)-1].Total
+func (g game) isComplete() bool {
+	frames := g.frames()
+	return len(frames) == 10 && frames[len(frames)-1].isComplete()
 }
 
-func (g Game) frameComplete(frame view.Frame) bool {
-	return len(frame.Balls) == 2 || frame.Total == 10
+func (g game) currentFrame() frame {
+	if g.isComplete() {
+		return frame{number: 0, total: 10}
+	}
+	frames := g.frames()
+	f := frames[len(frames)-1]
+	if f.isComplete() {
+		f = frame{number: f.number + 1, balls: []int{}}
+	}
+	return f
+}
+
+func (Game) CurrentFrame(bowls []int) int {
+	g := game{bowls: bowls}
+	return g.currentFrame().number
+}
+
+func (Game) RemainingPins(bowls []int) int {
+	g := game{bowls: bowls}
+	return 10 - g.currentFrame().total
 }
