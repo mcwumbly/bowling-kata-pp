@@ -65,6 +65,13 @@ var _ = Describe("Game", func() {
 			bowls = []int{3, 4}
 			frames = app.Frames(bowls)
 			Expect(len(frames)).To(Equal(1))
+			Expect(frames[0].Frame).To(Equal(1))
+			Expect(frames[0].Total).To(Equal(7))
+			Expect(len(frames[0].Balls)).To(Equal(2))
+			Expect(frames[0].Balls[0].Ball).To(Equal(1))
+			Expect(frames[0].Balls[0].Pins).To(Equal(3))
+			Expect(frames[0].Balls[1].Ball).To(Equal(2))
+			Expect(frames[0].Balls[1].Pins).To(Equal(4))
 		})
 	})
 })
