@@ -2,6 +2,7 @@ package acceptance_test
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -71,13 +72,8 @@ var _ = Describe("bowling kata++", func() {
 		})
 
 		By("bowling the first ball", func() {
-			req := bytes.NewBufferString(`{ "bowl": { "pins": 3 } }`)
-			resp, err := http.Post(url, "application/json", req)
-			Expect(err).NotTo(HaveOccurred())
-			defer resp.Body.Close()
-			respBytes, err := ioutil.ReadAll(resp.Body)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(string(respBytes)).To(MatchJSON(`{
+			resp := addBowl(3)
+			Expect(resp).To(MatchJSON(`{
 			"game": {
 				"currentFrame": 1,
 				"remainingPins": 7,
@@ -96,13 +92,8 @@ var _ = Describe("bowling kata++", func() {
 		})
 
 		By("bowling the second ball", func() {
-			req := bytes.NewBufferString(`{ "bowl": { "pins": 5 } }`)
-			resp, err := http.Post(url, "application/json", req)
-			Expect(err).NotTo(HaveOccurred())
-			defer resp.Body.Close()
-			respBytes, err := ioutil.ReadAll(resp.Body)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(string(respBytes)).To(MatchJSON(`{
+			resp := addBowl(5)
+			Expect(resp).To(MatchJSON(`{
 			"game": {
 				"currentFrame": 2,
 				"remainingPins": 10,
@@ -122,58 +113,19 @@ var _ = Describe("bowling kata++", func() {
 		})
 
 		By("bowling the remaining balls", func() {
-			req := bytes.NewBufferString(`{ "bowl": { "pins": 4 } }`)
-			_, err := http.Post(url, "application/json", req)
-			Expect(err).NotTo(HaveOccurred())
-
-			req = bytes.NewBufferString(`{ "bowl": { "pins": 6 } }`)
-			_, err = http.Post(url, "application/json", req)
-			Expect(err).NotTo(HaveOccurred())
-
-			req = bytes.NewBufferString(`{ "bowl": { "pins": 1 } }`)
-			_, err = http.Post(url, "application/json", req)
-			Expect(err).NotTo(HaveOccurred())
-
-			req = bytes.NewBufferString(`{ "bowl": { "pins": 2 } }`)
-			_, err = http.Post(url, "application/json", req)
-			Expect(err).NotTo(HaveOccurred())
-
-			req = bytes.NewBufferString(`{ "bowl": { "pins": 5 } }`)
-			_, err = http.Post(url, "application/json", req)
-			Expect(err).NotTo(HaveOccurred())
-
-			req = bytes.NewBufferString(`{ "bowl": { "pins": 5 } }`)
-			_, err = http.Post(url, "application/json", req)
-			Expect(err).NotTo(HaveOccurred())
-
-			req = bytes.NewBufferString(`{ "bowl": { "pins": 10 } }`)
-			_, err = http.Post(url, "application/json", req)
-			Expect(err).NotTo(HaveOccurred())
-
-			req = bytes.NewBufferString(`{ "bowl": { "pins": 10 } }`)
-			_, err = http.Post(url, "application/json", req)
-			Expect(err).NotTo(HaveOccurred())
-
-			req = bytes.NewBufferString(`{ "bowl": { "pins": 10 } }`)
-			_, err = http.Post(url, "application/json", req)
-			Expect(err).NotTo(HaveOccurred())
-
-			req = bytes.NewBufferString(`{ "bowl": { "pins": 10 } }`)
-			_, err = http.Post(url, "application/json", req)
-			Expect(err).NotTo(HaveOccurred())
-
-			req = bytes.NewBufferString(`{ "bowl": { "pins": 10 } }`)
-			_, err = http.Post(url, "application/json", req)
-			Expect(err).NotTo(HaveOccurred())
-
-			req = bytes.NewBufferString(`{ "bowl": { "pins": 10 } }`)
-			resp, err := http.Post(url, "application/json", req)
-			Expect(err).NotTo(HaveOccurred())
-
-			defer resp.Body.Close()
-			respBytes, err := ioutil.ReadAll(resp.Body)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(string(respBytes)).To(MatchJSON(`{
+			addBowl(4)
+			addBowl(6)
+			addBowl(1)
+			addBowl(2)
+			addBowl(5)
+			addBowl(5)
+			addBowl(10)
+			addBowl(10)
+			addBowl(10)
+			addBowl(10)
+			addBowl(10)
+			resp := addBowl(10)
+			Expect(resp).To(MatchJSON(`{
 			"game": {
 				"frames": [
 				  { "frame": 1, "total": 8,
@@ -252,3 +204,13 @@ var _ = Describe("bowling kata++", func() {
 		})
 	})
 })
+
+func addBowl(pins int) string {
+	req := bytes.NewBufferString(fmt.Sprintf(`{ "bowl": { "pins": %d } }`, pins))
+	resp, err := http.Post(url, "application/json", req)
+	Expect(err).NotTo(HaveOccurred())
+	defer resp.Body.Close()
+	respBytes, err := ioutil.ReadAll(resp.Body)
+	Expect(err).NotTo(HaveOccurred())
+	return string(respBytes)
+}
